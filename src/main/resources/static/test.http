@@ -1,0 +1,14 @@
+POST http://localhost:8080/putCompany
+Content-Type: application/json
+
+{}
+
+###
+
+
+GET http://localhost:8080/test
+Content-Type: application/json
+Cookie: JSESSIONID=C0E21A03FD9DA96065372B149B347E34
+###
+
+
