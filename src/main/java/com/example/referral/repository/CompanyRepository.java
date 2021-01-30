@@ -1,4 +1,4 @@
-package com.example.referral.service;
+package com.example.referral.repository;
 
 import com.example.referral.model.Company;
 import org.springframework.data.jpa.repository.JpaRepository;

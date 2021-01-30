@@ -34,7 +34,8 @@ public class User {
     Company company;
 
     @Nullable
-    Blob resume;
+    @OneToMany
+    List<Resume> resume;
 
     @NotNull
     String name;

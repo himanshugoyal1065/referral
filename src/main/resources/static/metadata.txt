@@ -1,0 +1,2 @@
+Use chrome to hit /test endpoint. After that, use restman to make the requests.
+

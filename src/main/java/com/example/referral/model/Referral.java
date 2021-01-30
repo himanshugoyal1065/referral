@@ -1,11 +1,15 @@
 package com.example.referral.model;
 
+import com.example.referral.utils.Constants;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
 import java.sql.Blob;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -15,16 +19,24 @@ public class Referral {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    String uuid;
+    Long uuid;
 
     String company;
 
     String jobId;
+
+    String name;
 
     @ManyToOne
     User requester;
 
     Blob resume;
 
-    //adding created at / updated at columns
+    String status = Constants.CREATED;
+
+    @CreationTimestamp
+    private LocalDateTime createDateTime;
+
+    @UpdateTimestamp
+    private LocalDateTime updateDateTime;
 }

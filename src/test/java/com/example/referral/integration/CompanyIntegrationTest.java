@@ -1,7 +1,7 @@
 package com.example.referral.integration;
 
 import com.example.referral.model.Company;
-import com.example.referral.service.CompanyRepository;
+import com.example.referral.repository.CompanyRepository;
 import org.h2.tools.Server;
 import org.junit.Test;
 import org.junit.jupiter.api.BeforeAll;
