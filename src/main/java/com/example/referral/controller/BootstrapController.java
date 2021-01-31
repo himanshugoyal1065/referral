@@ -78,7 +78,7 @@ public class BootstrapController {
         final String userEmail = token.getPrincipal().getAttribute(Constants.EMAIL_SMALL);
 
 
-        if (userEmail != null && !userEmail.isEmpty() && !userRepository.existsById(userEmail)) {
+        if (userEmail != null && !userEmail.isEmpty() && !userService.userExists(userEmail)) {
             return new ResponseEntity("The user must be authenticated", HttpStatus.FORBIDDEN);
         }
 

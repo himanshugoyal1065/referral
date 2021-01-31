@@ -21,6 +21,11 @@ public class UserService {
     private UserRepository userRepository;
 
     @NotNull
+    public boolean userExists(@NotNull final String email) {
+        return userRepository.existsById(email);
+    }
+
+    @NotNull
     public ResponseMessage saveUser(@NotNull final User user) {
         try {
             userRepository.saveAndFlush(user);
