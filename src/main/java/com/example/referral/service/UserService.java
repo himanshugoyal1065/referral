@@ -27,6 +27,9 @@ public class UserService {
 
     @NotNull
     public ResponseMessage saveUser(@NotNull final User user) {
+        if (userRepository.existsById(user.getEmail())) {
+            return new ResponseMessage(true, "The user with email " + user.getEmail() + " exists");
+        }
         try {
             userRepository.saveAndFlush(user);
         } catch (Exception e) {

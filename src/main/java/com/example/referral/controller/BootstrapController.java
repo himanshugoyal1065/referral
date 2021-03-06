@@ -5,7 +5,7 @@ import com.example.referral.model.Referral;
 import com.example.referral.model.User;
 import com.example.referral.repository.CompanyRepository;
 import com.example.referral.repository.ReferralRepository;
-import com.example.referral.repository.UserRepository;
+import com.example.referral.service.CompanyService;
 import com.example.referral.service.UserService;
 import com.example.referral.utils.Constants;
 import com.example.referral.utils.ResponseMessage;
@@ -19,7 +19,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -27,7 +26,7 @@ import java.util.Map;
 public class BootstrapController {
 
     @Autowired
-    private CompanyRepository companyRepository;
+    private CompanyService companyService;
 
     @Autowired
     private ReferralRepository referralRepository;
@@ -49,7 +48,7 @@ public class BootstrapController {
 
     @GetMapping("/getAllCompanies")
     public List<String> getAllCompanies() {
-        return Collections.emptyList();
+        return companyService.getAllCompanyName();
     }
 
     /**
@@ -58,8 +57,17 @@ public class BootstrapController {
      * @return the created company uri
      */
     @PostMapping("/putCompany")
-    public ResponseEntity<Company> putCompany(@RequestBody @NotNull Company company) {
-        Company createdCompany = companyRepository.save(company);
+    public ResponseEntity<Company> putCompany(@RequestBody @NotNull Company company, @NotNull OAuth2AuthenticationToken token) {
+        final User user = userService.getUserByEmail(token.getPrincipal().getAttribute(Constants.EMAIL_SMALL));
+
+        if (user == null) {
+            ResponseEntity.notFound().build();
+        }
+
+        //setting the user you have added the company
+        company.setUser(user);
+
+        final Company createdCompany = companyService.saveCompany(company);
         if (createdCompany == null) {
             return ResponseEntity.notFound().build();
         } else {
@@ -103,22 +111,30 @@ public class BootstrapController {
         final User user = new User();
         user.setEmail((String) userAttributes.get(Constants.EMAIL_SMALL));
         user.setName((String) userAttributes.get(Constants.NAME_SMALL));
-        userService.saveUser(user);
+        userService.saveUser(user); //duplicate users are handled as the email is the primary key.
         return new ResponseEntity<User>(user, HttpStatus.OK);
     }
 
     @PostMapping("/putResume")
-    public ResponseEntity<Boolean> putResumeForUser(
+    public ResponseEntity<String> putResumeForUser(
             @RequestParam(required = true) @NotNull final MultipartFile resume,
             @NotNull final OAuth2AuthenticationToken token) {
         final String email = token.getPrincipal().getAttribute(Constants.EMAIL_SMALL);
         try {
-            userService.uploadResume(email, resume);
-            return ResponseEntity.status(HttpStatus.OK).body(true);
+            final ResponseMessage responseMessage = userService.uploadResume(email, resume);
+            if (responseMessage.isSuccess())
+                return ResponseEntity.status(HttpStatus.OK).body("true");
+            else
+                return ResponseEntity.status(HttpStatus.OK).body("The resume with name " + resume.getOriginalFilename() + " already exists");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body(false);
+            return ResponseEntity.status(HttpStatus.EXPECTATION_FAILED).body("false");
         }
     }
 
+//    @PostMapping("/recievePayment")
+//    public ResponseEntity<String> recievePayment(HttpServletRequest request) {
+//        System.out.println(request);
+//        return ResponseEntity.status(HttpStatus.OK).body("");
+//    }
 
 }

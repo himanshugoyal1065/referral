@@ -1,2 +1,24 @@
 Use chrome to hit /test endpoint. After that, use restman to make the requests.
 
+"/me"
+Input : no metadata
+Output :
+{
+
+}
+
+
+"/putCompany"
+Input :
+[
+    {
+        "company": "PayPal",
+        "jobId": "12323",
+        "name": "Himanshu"
+    },
+    {
+        "company": "companyName",
+        "jobId": "erere2323",
+        "name": "Himanshu Goyal"
+    }
+]
