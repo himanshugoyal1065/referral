@@ -48,25 +48,26 @@ public class UserService {
         final User user = userRepository.findById(email).get();
         final String newFileName = StringUtils.cleanPath(resumeFile.getOriginalFilename());
 
-        final List<Resume> resumes = user.getResume();
+        final Resume resume = user.getResume();
 
-        for (Resume resume : resumes) {
-            if (newFileName.equals(resume.getName())) {
-                return new ResponseMessage(false, "The name already exists");
-            }
-        }
 
-        resumes.add(new Resume(newFileName, resumeFile.getBytes()));
+        //finding the logic to ask whether, "are you sure to delete this? " and then delete the current resume or not.
+        // has to be done from the frontend.
 
-        user.setResume(resumes);
+        user.setResume(new Resume(newFileName, resumeFile.getBytes()));
         userRepository.save(user);
 
         return new ResponseMessage(true, "the resume " + newFileName + " is added successfully");
     }
 
     @Nullable
-    public List<Resume> getResumeForUserByEmail(@NotNull final String email) {
+    public Resume getResumeForUserByEmail(@NotNull final String email) {
         return userRepository.findById(email).get().getResume();
+    }
+
+    @NotNull
+    public boolean doesResumeExistsForUserByEmail(@NotNull final String email) {
+        return userRepository.findById(email).get().getEmail() != null;
     }
 
     public boolean removeResumeForUserByEmail(@NotNull final String email) {

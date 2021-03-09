@@ -34,8 +34,8 @@ public class User {
     Company company;
 
     @Nullable
-    @OneToMany
-    List<Resume> resume;
+    @OneToOne
+    Resume resume;
 
     @NotNull
     String name;

@@ -51,6 +51,18 @@ public class BootstrapController {
         return companyService.getAllCompanyName();
     }
 
+    @GetMapping("/resumeExists")
+    public ResponseEntity<Boolean> getResumeExists(@NotNull OAuth2AuthenticationToken token) {
+        boolean resumeExists =
+                userService.doesResumeExistsForUserByEmail(token.getPrincipal().getAttribute(Constants.EMAIL_SMALL));
+
+        if (!resumeExists) {
+            return ResponseEntity.status(HttpStatus.OK).body(false);
+        }
+
+        return ResponseEntity.status(HttpStatus.OK).body(true);
+    }
+
     /**
      * adding a new company
      * @param company the name of the company
