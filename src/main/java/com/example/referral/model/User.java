@@ -8,7 +8,6 @@ import lombok.Setter;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
-import java.sql.Blob;
 import java.util.List;
 
 @Entity
@@ -28,7 +27,7 @@ public class User {
     @OneToMany(mappedBy = "requester")
     List<Referral> referralsGiven;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "company")
     @Nullable
     Company company;

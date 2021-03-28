@@ -1,12 +1,15 @@
 package com.example.referral.service;
 
+import com.example.referral.model.Company;
 import com.example.referral.model.Resume;
 import com.example.referral.model.User;
 import com.example.referral.repository.UserRepository;
+import com.example.referral.utils.Constants;
 import com.example.referral.utils.ResponseMessage;
 import com.sun.istack.NotNull;
 import com.sun.istack.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,7 +29,21 @@ public class UserService {
     }
 
     @NotNull
-    public ResponseMessage saveUser(@NotNull final User user) {
+    public User saveNewUser(@NotNull final OAuth2AuthenticationToken token) {
+        final String email = token.getPrincipal().getAttribute(Constants.EMAIL_SMALL);
+        final String name = token.getPrincipal().getAttribute(Constants.NAME_SMALL);
+
+        final User user = new User();
+        user.setName(name);
+        user.setEmail(email);
+
+        saveUser(user);
+
+        return getUserByEmail(email);
+    }
+
+    @NotNull
+    private ResponseMessage saveUser(@NotNull final User user) {
         if (userRepository.existsById(user.getEmail())) {
             return new ResponseMessage(true, "The user with email " + user.getEmail() + " exists");
         }
@@ -97,4 +114,22 @@ public class UserService {
             System.out.println("ignoring the linking");
         }
     }
+
+    @NotNull
+    public User putCompanyForUser(@NotNull final Company company, @NotNull final User user) {
+        user.setCompany(company);
+        userRepository.saveAndFlush(user);
+        return getUserByEmail(user.getEmail());
+    }
+
+    @NotNull
+    public boolean getCompanyExistsForUser(@NotNull final User user) {
+        final Company company = user.getCompany();
+        if (company == null) {
+            return false;
+        }
+        return true;
+    }
+
+
 }
