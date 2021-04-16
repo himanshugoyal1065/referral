@@ -41,4 +41,13 @@ public class User {
 
     @Nullable
     String mobileNumber;
+
+    @Nullable
+    String imageUrl;
+
+    @Nullable
+    @Enumerated(EnumType.STRING)
+    AuthProvider provider;
+
+    String providerId;
 }

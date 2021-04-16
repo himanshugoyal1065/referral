@@ -1,8 +1,11 @@
 package com.example.referral.controller;
 
+import com.example.referral.exceptions.ResourceNotFoundException;
 import com.example.referral.model.Referral;
 import com.example.referral.model.User;
 import com.example.referral.repository.ReferralRepository;
+import com.example.referral.security.CurrentUser;
+import com.example.referral.security.UserPrincipal;
 import com.example.referral.service.UserService;
 import com.example.referral.utils.Constants;
 import com.example.referral.utils.ResponseMessage;
@@ -29,6 +32,12 @@ public class BootstrapController {
     public String testEndpointForSpirngSecurity(OAuth2AuthenticationToken token) {
         System.out.println("the token is " + token);
         return "Hello! Welcome to website";
+    }
+
+    @GetMapping("/api/test")
+    public String testEndpointCheck(OAuth2AuthenticationToken token) {
+        System.out.println("the token is " + String.valueOf(token));
+        return "test api working";
     }
 
     @GetMapping("/test")
@@ -74,10 +83,13 @@ public class BootstrapController {
         return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<User> getUser(@NotNull final OAuth2AuthenticationToken token) {
-        final User user = userService.saveNewUser(token); //duplicate users are handled as the email is the primary key.
-        return new ResponseEntity<User>(user, HttpStatus.OK);
+    @GetMapping("/user/me")
+    public User getUser(@CurrentUser final UserPrincipal userPrincipal) {
+//        final User user = userService.saveNewUser(token); //duplicate users are handled as the email is the primary key.
+//        return new ResponseEntity<User>(user, HttpStatus.OK);
+
+        return userService.getUserByEmail(userPrincipal.getEmail());
+//                .orElseThrow(() -> new ResourceNotFoundException("User", "Email", userPrincipal.getEmail()));
     }
 
     @PostMapping("/putResume")

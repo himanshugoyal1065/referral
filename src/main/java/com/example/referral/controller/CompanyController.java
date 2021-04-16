@@ -6,6 +6,7 @@ import com.example.referral.service.CompanyService;
 import com.example.referral.service.UserService;
 import com.sun.istack.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Required;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -83,5 +84,13 @@ public class CompanyController {
         final User user = userService.saveNewUser(token);
         boolean isExists = userService.getCompanyExistsForUser(user);
         return ResponseEntity.status(HttpStatus.OK).body(isExists);
+    }
+
+    @GetMapping("/isCompanyEmailValid")
+    public ResponseEntity<Boolean> isCompanyEmailValid(@NotNull @RequestBody String companyName, @NotNull @RequestBody String email) {
+
+        //call the api provided
+
+        return ResponseEntity.status(HttpStatus.OK).body(false);
     }
 }
