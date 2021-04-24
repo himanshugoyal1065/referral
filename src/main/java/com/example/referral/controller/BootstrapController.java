@@ -1,11 +1,11 @@
 package com.example.referral.controller;
 
-import com.example.referral.model.Company;
+import com.example.referral.exceptions.ResourceNotFoundException;
 import com.example.referral.model.Referral;
 import com.example.referral.model.User;
-import com.example.referral.repository.CompanyRepository;
 import com.example.referral.repository.ReferralRepository;
-import com.example.referral.service.CompanyService;
+import com.example.referral.security.CurrentUser;
+import com.example.referral.security.UserPrincipal;
 import com.example.referral.service.UserService;
 import com.example.referral.utils.Constants;
 import com.example.referral.utils.ResponseMessage;
@@ -16,17 +16,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
 @RestController
 public class BootstrapController {
-
-    @Autowired
-    private CompanyService companyService;
 
     @Autowired
     private ReferralRepository referralRepository;
@@ -36,8 +30,14 @@ public class BootstrapController {
 
     @GetMapping("/")
     public String testEndpointForSpirngSecurity(OAuth2AuthenticationToken token) {
-        System.out.println("the token is " + String.valueOf(token));
+        System.out.println("the token is " + token);
         return "Hello! Welcome to website";
+    }
+
+    @GetMapping("/api/test")
+    public String testEndpointCheck(OAuth2AuthenticationToken token) {
+        System.out.println("the token is " + String.valueOf(token));
+        return "test api working";
     }
 
     @GetMapping("/test")
@@ -46,51 +46,29 @@ public class BootstrapController {
         return "test api working";
     }
 
-    @GetMapping("/getAllCompanies")
-    public List<String> getAllCompanies() {
-        return companyService.getAllCompanyName();
-    }
 
-    /**
-     * adding a new company
-     * @param company the name of the company
-     * @return the created company uri
-     */
-    @PostMapping("/putCompany")
-    public ResponseEntity<Company> putCompany(@RequestBody @NotNull Company company, @NotNull OAuth2AuthenticationToken token) {
-        final User user = userService.getUserByEmail(token.getPrincipal().getAttribute(Constants.EMAIL_SMALL));
 
-        if (user == null) {
-            ResponseEntity.notFound().build();
+    @GetMapping("/resumeExists")
+    public ResponseEntity<Boolean> getResumeExists(@NotNull OAuth2AuthenticationToken token) {
+
+        userService.saveNewUser(token);
+
+        boolean resumeExists =
+                userService.doesResumeExistsForUserByEmail(token.getPrincipal().getAttribute(Constants.EMAIL_SMALL));
+
+        if (!resumeExists) {
+            return ResponseEntity.status(HttpStatus.OK).body(false);
         }
 
-        //setting the user you have added the company
-        company.setUser(user);
-
-        final Company createdCompany = companyService.saveCompany(company);
-        if (createdCompany == null) {
-            return ResponseEntity.notFound().build();
-        } else {
-            URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                    .path("/{id}")
-                    .buildAndExpand(createdCompany.getName())
-                    .toUri();
-
-            return ResponseEntity.created(uri).body(createdCompany);
-        }
+        return ResponseEntity.status(HttpStatus.OK).body(true);
     }
+
+
 
     @PostMapping("/doReferral")
     public ResponseEntity referralRequest(@RequestBody @NotNull List<Referral> referrals, @NotNull OAuth2AuthenticationToken token) {
 
-        final String userEmail = token.getPrincipal().getAttribute(Constants.EMAIL_SMALL);
-
-
-        if (userEmail != null && !userEmail.isEmpty() && !userService.userExists(userEmail)) {
-            return new ResponseEntity("The user must be authenticated", HttpStatus.FORBIDDEN);
-        }
-
-        final User user = userService.getUserByEmail(userEmail);
+        final User user = userService.saveNewUser(token);
 
         for (Referral referral : referrals) {
             //validate the referral if required ?
@@ -105,20 +83,22 @@ public class BootstrapController {
         return ResponseEntity.notFound().build();
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<User> getUser(@NotNull final OAuth2AuthenticationToken token) {
-        final Map<String, Object> userAttributes = token.getPrincipal().getAttributes();
-        final User user = new User();
-        user.setEmail((String) userAttributes.get(Constants.EMAIL_SMALL));
-        user.setName((String) userAttributes.get(Constants.NAME_SMALL));
-        userService.saveUser(user); //duplicate users are handled as the email is the primary key.
-        return new ResponseEntity<User>(user, HttpStatus.OK);
+    @GetMapping("/user/me")
+    public User getUser(@CurrentUser final UserPrincipal userPrincipal) {
+//        final User user = userService.saveNewUser(token); //duplicate users are handled as the email is the primary key.
+//        return new ResponseEntity<User>(user, HttpStatus.OK);
+
+        return userService.getUserByEmail(userPrincipal.getEmail());
+//                .orElseThrow(() -> new ResourceNotFoundException("User", "Email", userPrincipal.getEmail()));
     }
 
     @PostMapping("/putResume")
     public ResponseEntity<String> putResumeForUser(
             @RequestParam(required = true) @NotNull final MultipartFile resume,
             @NotNull final OAuth2AuthenticationToken token) {
+
+        userService.saveNewUser(token);
+
         final String email = token.getPrincipal().getAttribute(Constants.EMAIL_SMALL);
         try {
             final ResponseMessage responseMessage = userService.uploadResume(email, resume);
@@ -131,10 +111,6 @@ public class BootstrapController {
         }
     }
 
-//    @PostMapping("/recievePayment")
-//    public ResponseEntity<String> recievePayment(HttpServletRequest request) {
-//        System.out.println(request);
-//        return ResponseEntity.status(HttpStatus.OK).body("");
-//    }
+
 
 }

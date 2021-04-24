@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.persistence.*;
 import java.sql.Blob;
@@ -30,7 +31,8 @@ public class Referral {
     @ManyToOne
     User requester;
 
-    Blob resume;
+    @OneToOne
+    Resume resume;
 
     String status = Constants.CREATED;
 

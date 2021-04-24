@@ -8,7 +8,6 @@ import lombok.Setter;
 import org.springframework.lang.Nullable;
 
 import javax.persistence.*;
-import java.sql.Blob;
 import java.util.List;
 
 @Entity
@@ -28,18 +27,27 @@ public class User {
     @OneToMany(mappedBy = "requester")
     List<Referral> referralsGiven;
 
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "company")
     @Nullable
     Company company;
 
     @Nullable
-    @OneToMany
-    List<Resume> resume;
+    @OneToOne
+    Resume resume;
 
     @NotNull
     String name;
 
     @Nullable
     String mobileNumber;
+
+    @Nullable
+    String imageUrl;
+
+    @Nullable
+    @Enumerated(EnumType.STRING)
+    AuthProvider provider;
+
+    String providerId;
 }
